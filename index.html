@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body
+    unselectable="on"
+    onselectstart="return false;"
+    onmousedown="return false;"
+  >
+    <div>
+      <table id="buttons">
+        <tr>
+          <td>
+            <div class="outer-container">
+              <span class="button off" id="btnPuerta">
+                <i class="bi bi-power"></i
+              ></span>
+            </div>
+          </td>
+          <td>
+            <div class="outer-container">
+              <span class="button off" id="btnSala">
+                <i class="bi bi-power"></i
+              ></span>
+            </div>
+          </td>
+          <td>
+            <div class="outer-container">
+              <span class="button off" id="btnC1">
+                <i class="bi bi-power"></i
+              ></span>
+            </div>
+          </td>
+          <td>
+            <div class="outer-container">
+              <span class="button off" id="btnC2">
+                <i class="bi bi-power"></i
+              ></span>
+            </div>
+          </td>
+          <td>
+            <div class="outer-container">
+              <span class="button off" id="btnC3">
+                <i class="bi bi-power"></i
+              ></span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>Abrir puerta</td>
+          <td>Encender Sala</td>
+          <td>Encender cuarto 1</td>
+          <td>Encender cuarto 2</td>
+          <td>Encender cuarto 3</td>
+        </tr>
+      </table>
+      <table class="table button tableii">
+        <tbody>
+          <tr>
+            <th scope="row">Sensor de Humedad:</th>
+            <td id="sensor1"></td>
+          </tr>
+          <tr>
+            <th scope="row">Sensor de Presión:</th>
+            <td id="sensor2"></td>
+          </tr>
+          <tr>
+            <th scope="row">Sensor Temperatura:</th>
+            <td id="sensor3"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      function changeClass(e) {
+        e.classList.toggle("off");
+        e.classList.toggle("on");
+      }
+      document.querySelectorAll("span").forEach((span) =>
+        span.addEventListener("click", function () {
+          changeClass(this);
+        })
+      );
+    </script>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.8.4/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        onValue,
+        set,
+        get,
+      } from "https://www.gstatic.com/firebasejs/9.8.4/firebase-database.js";
+      const firebaseConfig = {
+        apiKey: "AIzaSyBY_Czg3FmSM4iaEYil0u9BB2YpE7_BazM",
+        authDomain: "emergentes-f0115.firebaseapp.com",
+        databaseURL: "https://emergentes-f0115-default-rtdb.firebaseio.com",
+        projectId: "emergentes-f0115",
+        storageBucket: "emergentes-f0115.appspot.com",
+        messagingSenderId: "291708039523",
+        appId: "1:291708039523:web:7cc336096bf6d2a357e356",
+        measurementId: "G-W633PGSVTM",
+      };
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase();
+      const dataTemperature = ref(database, "/Temperature");
+
+      setInterval(() => {
+        onValue(dataTemperature, function (arg) {
+          var temp = arg.val();
+          console.log("Temperatura: " + temp);
+          document.getElementById("sensor1").innerHTML = temp;
+        });
+        const dataPressure = ref(database, "/Pressure");
+        onValue(dataPressure, function (arg) {
+          var temp = arg.val();
+          console.log("Presión: " + temp);
+          document.getElementById("sensor2").innerHTML = temp;
+        });
+        const dataHumidity = ref(database, "/Humidity");
+        onValue(dataHumidity, function (arg) {
+          var temp = arg.val();
+          console.log("Humedad: " + temp);
+          document.getElementById("sensor3").innerHTML = temp;
+        });
+      }, 5000);
+
+      //=======Puerta======
+      async function controlPuerta() {
+        console.log("Puerta");
+        var valorActual = (await get(ref(database, "/Puerta"))).val();
+        set(ref(database, "/Puerta"), !valorActual);
+      }
+      document
+        .getElementById("btnPuerta")
+        .addEventListener("click", controlPuerta);
+
+      //======Sala======
+      async function alternarLedSala() {
+        console.log("Led sala");
+        var valorActual = (await get(ref(database, "/ledSala"))).val();
+        set(ref(database, "/ledSala"), !valorActual);
+      }
+      document
+        .getElementById("btnSala")
+        .addEventListener("click", alternarLedSala);
+
+      //======Cuarto 1======
+      async function alternarLedC1() {
+        console.log("Led Cuarto 1");
+        var valorActual = (await get(ref(database, "/ledCuarto1"))).val();
+        set(ref(database, "/ledCuarto1"), !valorActual);
+      }
+      document.getElementById("btnC1").addEventListener("click", alternarLedC1);
+
+      //======Cuarto 2======
+      async function alternarLedC2() {
+        console.log("Led Cuarto 2");
+        var valorActual = (await get(ref(database, "/ledCuarto2"))).val();
+        set(ref(database, "/ledCuarto2"), !valorActual);
+      }
+      document.getElementById("btnC2").addEventListener("click", alternarLedC2);
+
+      //======Cuarto 3======
+      async function alternarLedC3() {
+        console.log("Led Cuarto 3");
+        var valorActual = (await get(ref(database, "/ledCuarto3"))).val();
+        set(ref(database, "/ledCuarto3"), !valorActual);
+      }
+      document.getElementById("btnC3").addEventListener("click", alternarLedC3);
+    </script>
+  </body>
+</html>
